@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Profile Lock",
+    "version": "1.0",
+    "description": "Adds a password lock after Chrome profile selection.",
+    "permissions": [
+      "storage",
+      "scripting",
+      "activeTab",
+      "tabs"
+    ],
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_start"
+      }
+    ],
+    "web_accessible_resources": [{
+      "resources": ["setup.html", "lock.html"],
+      "matches": ["<all_urls>"]
+    }]
+}
