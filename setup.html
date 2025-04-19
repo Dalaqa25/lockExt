@@ -6,17 +6,18 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #1c1c1c;
+            background-color: #252525;
         }
         .setup-container {
             background-color: #1c1c1c;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
             width: 300px;
             text-align: center;
             z-index: 9999;
@@ -55,6 +56,12 @@
             margin-top: 5px;
             display: none;
         }
+        .note {
+            margin-top: 40px;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: medium;
+        }
     </style>
 </head>
 <body>
@@ -64,6 +71,12 @@
         <input type="password" id="confirmPassword" placeholder="Confirm password">
         <div id="error" class="error">Passwords do not match!</div>
         <button id="savePassword">Save Password</button>
+        <div class="note">
+            <strong>Important:</strong> Please write down your password and keep it safe. If you forget it, you will not be able to unlock your profile.<br><br>
+        </div>
+    </div>
+    <div class="note">
+        <strong>Important: </strong> To hide the extension icon, right-click on it in the Chrome toolbar and select <strong>"Hide in Chrome menu"</strong>.
     </div>
     <script src="setup.js"></script>
 </body>
