@@ -1,5 +1,8 @@
 console.log("Content script loaded.");
 
+// Initialize on script load
+checkAndShowLockScreen();
+
 function createLockScreen() {
   // Check if lock screen already exists and remove it first
   const existingLockScreen = document.getElementById('profileLockScreen');
@@ -15,7 +18,7 @@ function createLockScreen() {
   lockScreen.style.left = '0';
   lockScreen.style.width = '100%';
   lockScreen.style.height = '100%';
-  lockScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  lockScreen.style.backgroundColor = '#1c1c1c';
   lockScreen.style.zIndex = '9999';
   lockScreen.style.display = 'flex';
   lockScreen.style.justifyContent = 'center';
@@ -23,11 +26,11 @@ function createLockScreen() {
   
   // Set innerHTML after creating the element
   lockScreen.innerHTML = `
-    <div style="background-color: white; padding: 20px; border-radius: 5px; text-align: center;">
-      <h1>Profile Locked</h1>
-      <input type="password" id="passwordInput" placeholder="Enter Password" style="padding: 8px; margin: 10px 0;">
-      <button id="unlockButton" style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Unlock</button>
-      <div id="error" style="color: red; margin-top: 10px; display: none;">Incorrect password!</div>
+    <div style="background-color: #1c1c1c; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 300px; text-align: center;">
+      <h1 style="color: #ffffff;">Profile Locked</h1>
+      <input type="password" id="passwordInput" placeholder="Enter Password" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #333; border-radius: 4px; box-sizing: border-box; background-color: #2c2c2c; color: #ffffff;">
+      <button id="unlockButton" style="width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">Unlock</button>
+      <div id="error" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">Incorrect password!</div>
     </div>`;
 
   // Add to DOM
@@ -104,6 +107,3 @@ function checkAndShowLockScreen() {
     }
   });
 }
-
-// Initialize on script load
-checkAndShowLockScreen();
