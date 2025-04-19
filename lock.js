@@ -19,13 +19,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    unlockButton.addEventListener('click', () => {
-        const enteredPassword = passwordInput.value;
+    // Function to handle unlock attempt
+    function attemptUnlock(password) {
+        chrome.storage.local.get(['password', 'profileLocked'], (data) => {
+            if (!data.password) {
+                console.error('No password found in storage');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'No password found. Please set up a new password.';
+                return;
+            }
 
-        chrome.storage.local.get('password', (data) => {
-            if (enteredPassword === data.password) {
+            if (password === data.password) {
                 chrome.storage.local.set({ profileLocked: false }, () => {
-                    console.log("Profile unlocked.");
+                    console.log("Profile unlocked successfully");
                     // Close this window and open Google
                     chrome.windows.getCurrent((window) => {
                         chrome.windows.remove(window.id);
@@ -37,15 +43,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Incorrect password!';
                 passwordInput.value = '';
+                passwordInput.focus();
             }
         });
+    }
+
+    // Handle unlock button click
+    unlockButton.addEventListener('click', () => {
+        const enteredPassword = passwordInput.value.trim();
+        if (enteredPassword) {
+            attemptUnlock(enteredPassword);
+        } else {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Please enter a password';
+        }
     });
 
     // Handle Enter key
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            unlockButton.click();
+            const enteredPassword = passwordInput.value.trim();
+            if (enteredPassword) {
+                attemptUnlock(enteredPassword);
+            } else {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Please enter a password';
+            }
         }
     });
 }); 

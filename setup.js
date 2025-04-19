@@ -25,11 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setupComplete: true,
             profileLocked: true
         }, () => {
-            // Close the setup tab and open a new tab
+            console.log("Password saved:", password); // Add this log
             chrome.tabs.getCurrent((tab) => {
                 chrome.tabs.remove(tab.id);
                 chrome.tabs.create({ url: 'chrome://newtab' });
             });
         });
     });
-}); 
+});

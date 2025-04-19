@@ -1,11 +1,13 @@
 console.log("Content script loaded.");
 
 function createLockScreen() {
-  // Check if lock screen already exists
-  if (document.getElementById('profileLockScreen')) {
-    return;
+  // Check if lock screen already exists and remove it first
+  const existingLockScreen = document.getElementById('profileLockScreen');
+  if (existingLockScreen) {
+    existingLockScreen.remove();
   }
 
+  // Create lockScreen element first
   const lockScreen = document.createElement('div');
   lockScreen.id = 'profileLockScreen';
   lockScreen.style.position = 'fixed';
@@ -13,11 +15,13 @@ function createLockScreen() {
   lockScreen.style.left = '0';
   lockScreen.style.width = '100%';
   lockScreen.style.height = '100%';
-  lockScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
-  lockScreen.style.zIndex = '9999'; // Ensure it's on top of everything
+  lockScreen.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  lockScreen.style.zIndex = '9999';
   lockScreen.style.display = 'flex';
   lockScreen.style.justifyContent = 'center';
   lockScreen.style.alignItems = 'center';
+  
+  // Set innerHTML after creating the element
   lockScreen.innerHTML = `
     <div style="background-color: white; padding: 20px; border-radius: 5px; text-align: center;">
       <h1>Profile Locked</h1>
@@ -26,46 +30,55 @@ function createLockScreen() {
       <div id="error" style="color: red; margin-top: 10px; display: none;">Incorrect password!</div>
     </div>`;
 
-  // Insert the lock screen at the beginning of the body
-  if (document.body) {
-    document.body.insertBefore(lockScreen, document.body.firstChild);
-  } else {
-    // If body doesn't exist yet, wait for it
-    const observer = new MutationObserver((mutations, obs) => {
-      if (document.body) {
-        document.body.insertBefore(lockScreen, document.body.firstChild);
-        obs.disconnect();
-      }
-    });
-    observer.observe(document.documentElement, { childList: true });
-  }
+  // Add to DOM
+  document.body.insertBefore(lockScreen, document.body.firstChild);
 
+  // Get elements after they're in the DOM
   const unlockButton = document.getElementById('unlockButton');
+  const passwordInput = document.getElementById('passwordInput');
   const errorDiv = document.getElementById('error');
 
-  unlockButton.addEventListener('click', () => {
-    const passwordInput = document.getElementById('passwordInput');
-    const enteredPassword = passwordInput.value;
+  if (!unlockButton || !passwordInput || !errorDiv) {
+    console.error('Required elements not found');
+    return;
+  }
 
-    chrome.storage.local.get('password', (data) => {
+  // Handle unlock button click
+  const handleUnlock = () => {
+    const enteredPassword = passwordInput.value.trim();
+    console.log("Unlock button clicked");
+
+    chrome.storage.local.get(['password', 'profileLocked'], (data) => {
+      console.log("Stored password exists:", !!data.password);
+      
       if (enteredPassword === data.password) {
         chrome.storage.local.set({ profileLocked: false }, () => {
-          console.log("Profile unlocked.");
-          lockScreen.remove();
+          console.log("Profile unlocked successfully");
+          if (document.getElementById('profileLockScreen')) {
+            document.getElementById('profileLockScreen').remove();
+          }
           window.removeEventListener('beforeunload', preventNavigation);
         });
       } else {
         errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Incorrect password!';
         passwordInput.value = '';
+        passwordInput.focus();
       }
     });
+  };
+
+  // Add event listeners
+  unlockButton.addEventListener('click', handleUnlock);
+  passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleUnlock();
+    }
   });
 
-  // Focus the password input
-  const passwordInput = document.getElementById('passwordInput');
-  if (passwordInput) {
-    passwordInput.focus();
-  }
+  // Focus the input
+  passwordInput.focus();
 }
 
 function preventNavigation(event) {
@@ -73,23 +86,24 @@ function preventNavigation(event) {
   event.returnValue = ''; // Required for Chrome to show a confirmation dialog
 }
 
-// Check if profile is locked and show lock screen
+// Modify checkAndShowLockScreen for better initialization
 function checkAndShowLockScreen() {
-  chrome.storage.local.get(['profileLocked', 'setupComplete'], (data) => {
-    if (data.setupComplete && data.profileLocked) {
-      console.log("Profile is locked, showing lock screen.");
-      createLockScreen();
-      window.addEventListener('beforeunload', preventNavigation);
-    } else if (!data.setupComplete) {
-      console.log("Setup not complete, waiting for password setup.");
-    } else {
-      console.log("Profile is not locked.");
+  chrome.storage.local.get(['profileLocked', 'setupComplete', 'password'], (data) => {
+    console.log("Lock screen check:", {
+      profileLocked: data.profileLocked,
+      setupComplete: data.setupComplete,
+      hasPassword: !!data.password
+    });
+
+    if (data.setupComplete && data.profileLocked && data.password) {
+      if (document.readyState === 'complete') {
+        createLockScreen();
+      } else {
+        document.addEventListener('DOMContentLoaded', createLockScreen);
+      }
     }
   });
 }
 
-// Run immediately and also when DOM is ready
+// Initialize on script load
 checkAndShowLockScreen();
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', checkAndShowLockScreen);
-}
