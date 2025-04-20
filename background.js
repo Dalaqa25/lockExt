@@ -14,20 +14,16 @@ chrome.runtime.onStartup.addListener(() => {
             // Always set profile as locked on startup
             chrome.storage.local.set({ profileLocked: true }, () => {
                 console.log("Profile locked on startup");
-                // Create a new Google tab
-                chrome.tabs.create({ 
-                    url: 'https://www.google.com',
-                    active: true
-                }, (tab) => {
-                    // Ensure lock screen is injected into the new tab
-                    setTimeout(() => {
-                        chrome.scripting.executeScript({
-                            target: { tabId: tab.id },
-                            files: ['content.js']
-                        }).catch((err) => {
-                            console.error('Failed to inject lock screen:', err);
+
+                // Get the currently active tab in the first window
+                chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                    if (tabs.length > 0) {
+                        const activeTab = tabs[0];
+                        // Redirect the active tab to the lock screen
+                        chrome.tabs.update(activeTab.id, {
+                            url: chrome.runtime.getURL('lock.html')
                         });
-                    }, 500);
+                    }
                 });
             });
         }
